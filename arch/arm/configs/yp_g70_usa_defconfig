@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.35.7
-# Sat Jan  7 01:54:48 2012
+# Sun Jan  8 18:55:40 2012
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -1760,10 +1760,13 @@ CONFIG_EXT2_FS=y
 # CONFIG_EXT3_FS is not set
 CONFIG_EXT4_FS=y
 CONFIG_EXT4_USE_FOR_EXT23=y
-# CONFIG_EXT4_FS_XATTR is not set
+CONFIG_EXT4_FS_XATTR=y
+CONFIG_EXT4_FS_POSIX_ACL=y
+CONFIG_EXT4_FS_SECURITY=y
 # CONFIG_EXT4_DEBUG is not set
 CONFIG_JBD2=y
 # CONFIG_JBD2_DEBUG is not set
+CONFIG_FS_MBCACHE=y
 # CONFIG_REISERFS_FS is not set
 # CONFIG_JFS_FS is not set
 CONFIG_FS_POSIX_ACL=y
