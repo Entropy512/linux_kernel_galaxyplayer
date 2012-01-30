@@ -3047,6 +3047,26 @@ void maxim_ta_charging_mode(int mode)
 	Set_MAX8998_PM_ADDR(CHGR1, reg_buff, 2); 
 }
 
+byte maxim_ta_get_chgrate()
+{
+  	byte reg_buff[2];
+	byte ichg;
+	
+	Get_MAX8998_PM_ADDR(CHGR1, reg_buff, 2); 
+	ichg = (reg_buff[0] & 0x7);
+
+	return ichg;
+}
+
+void maxim_ta_set_chgrate(byte chgrate)
+{
+  	byte reg_buff[2];
+	
+	Get_MAX8998_PM_ADDR(CHGR1, reg_buff, 2); 
+	reg_buff[0] = (reg_buff[0] & 0xF8) | chgrate;
+	Set_MAX8998_PM_ADDR(CHGR1, reg_buff, 2);
+}
+
 void maxim_charging_control(unsigned int dev_type  , unsigned int cmd)
 {
 	byte reg_buff[2];

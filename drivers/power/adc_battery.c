@@ -57,6 +57,11 @@ extern int s3c_adc_get_adc_data(int channel);
 extern void MAX8998_IRQ_init(void);
 extern void maxim_ta_charging_mode(int mode);
 extern void maxim_charging_control(unsigned int dev_type, unsigned int cmd);
+
+/* Prototypes for get/set ichg value in max8998_function.c */
+extern byte maxim_ta_get_chgrate();
+extern void maxim_ta_set_chgrate(byte chgrate);
+
 //extern void maxim_topoff_change(void); /* eur-feature */
 //extern unsigned char maxim_charging_enable_status(void); /* eur-feature */
 extern unsigned char maxim_vf_status(void);
@@ -2950,6 +2955,70 @@ static void s3c_store_bat_old_data(void)
 	battery_debug("[BAT]:%s : old_temp=%d, old_level=%d, old_is_full=%d\n", __func__, old_temp, old_level, old_is_full);
 }
 
+/*
+Implement increased-current step charging at low voltages
+*/
+static void stepcharger_statemachine(void)
+{
+  byte ichg = 0;
+  int batt_voltage = 0;
+
+
+  printk(" [BAT] Entered stepcharger state machine \n"); 
+  ichg = maxim_ta_get_chgrate();
+
+  batt_voltage = s3c_read_vol_for_cal();
+
+  printk(" [BAT] ICHG was 0x%02x \n",ichg);
+  printk(" [BAT] Voltage was %d\n",batt_voltage);
+
+  if((ichg == 0x4) || (ichg == 0x3))
+    {
+       if(batt_voltage < 4100)
+	{
+	  printk(" [BAT] increase current to 600 mA\n ");
+	  maxim_ta_set_chgrate(0x5);
+	}     
+    }
+  if(ichg == 0x5)
+    {
+      if(batt_voltage < 4050)
+	{
+	  printk(" [BAT] increase current to 700 mA\n ");
+	  maxim_ta_set_chgrate(0x06);
+	}
+      if(batt_voltage > 4150)
+	{
+	  printk(" [BAT] decrease current to 550 mA\n ");
+	  maxim_ta_set_chgrate(0x03);
+	}
+    }
+  if(ichg == 0x6)
+    {
+      if(batt_voltage < 4000)
+	{
+	  printk(" [BAT] increase current to 800 mA\n ");
+	  maxim_ta_set_chgrate(0x07);
+	}
+      if(batt_voltage > 4100)
+	{
+	  printk(" [BAT] decrease current to 600 mA\n ");
+	  maxim_ta_set_chgrate(0x05);
+	}
+    }
+  if(ichg == 0x7)
+    {
+      if(batt_voltage > 4050)
+	{
+	  printk(" [BAT] decrease current to 700 mA\n ");
+	  maxim_ta_set_chgrate(0x06);
+	}
+    }
+
+
+}
+
+
 static void s3c_bat_work(struct work_struct *work)
 {
 	battery_debug("[BAT]:%s\n", __func__);
@@ -2973,6 +3042,11 @@ static void s3c_bat_work(struct work_struct *work)
 	s3c_bat_charging_control();
 	s3c_cable_status_update();
 	s3c_bat_status_update();
+
+	/* If we're on AC, start running the stepcharger state machine */
+	if (s3c_bat_info.cable_status== CABLE_TYPE_AC) {
+	  stepcharger_statemachine();
+	}
 
 	mutex_unlock(&work_lock);
 	wake_unlock(&update_wake_lock);

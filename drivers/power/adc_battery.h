@@ -283,7 +283,7 @@ typedef enum s3c_adc_channel {
 #define SUPPORT_DOUBLE_CHECK_FULL_CHG
 #ifdef SUPPORT_DOUBLE_CHECK_FULL_CHG
 #define CURRENT_OF_FULL_CHG_1ST			415 // 0.1C => 0.1 * 2500 = 250mA(+-20mA)  465adc    /* 1.5mV/mA, VICHG_Vol = 3.3V * VICHG_adc / 2^12 (12 bit ADC, MAX 3.3V) */ 
-#define CURRENT_OF_FULL_CHG_2ND			70
+#define CURRENT_OF_FULL_CHG_2ND			150
 #else
 #define CURRENT_OF_FULL_CHG         316     /* 170mA => (code*1.5)mV , refer to code table. */ 
 //#define LPM_CURRENT_OF_FULL_CHG   316     /* 170mA => (code*1.5)mV , refer to code table. */
