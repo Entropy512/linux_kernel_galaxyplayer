@@ -50,6 +50,8 @@ static unsigned int mpll_freq; /* in MHz */
 static unsigned int apll_freq_max; /* in MHz */
 static DEFINE_MUTEX(set_freq_lock);
 
+extern int exp_UV_mV[5];
+
 /* frequency */
 static struct cpufreq_frequency_table freq_table[] = {
 	{L0, 1000*1000},
@@ -461,7 +463,7 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 	if (s3c_freqs.freqs.new == s3c_freqs.freqs.old && !first_run)
 		goto out;
 
-	arm_volt = dvs_conf[index].arm_volt;
+	arm_volt = exp_UV_mV[index]; //dvs_conf[index].arm_volt;
 	int_volt = dvs_conf[index].int_volt;
 
 	/* New clock information update */
@@ -648,7 +650,7 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 	memcpy(&s3c_freqs.old, &s3c_freqs.new, sizeof(struct s3c_freq));
 	cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, KERN_INFO,
 			"cpufreq: Performance changed[L%d]\n", index);
-	previous_arm_volt = dvs_conf[index].arm_volt;
+	previous_arm_volt = exp_UV_mV[index]; //dvs_conf[index].arm_volt;
 
 	if (first_run)
 		first_run = false;
@@ -691,7 +693,7 @@ static int s5pv210_cpufreq_resume(struct cpufreq_policy *policy)
 
 	memcpy(&s3c_freqs.old, &clk_info[level],
 			sizeof(struct s3c_freq));
-	previous_arm_volt = dvs_conf[level].arm_volt;
+	previous_arm_volt = exp_UV_mV[level]; //dvs_conf[level].arm_volt;
 
 	return ret;
 }
@@ -759,7 +761,7 @@ static int __init s5pv210_cpufreq_driver_init(struct cpufreq_policy *policy)
 
 	memcpy(&s3c_freqs.old, &clk_info[level],
 			sizeof(struct s3c_freq));
-	previous_arm_volt = dvs_conf[level].arm_volt;
+	previous_arm_volt = exp_UV_mV[level]; //dvs_conf[level].arm_volt;
 
 #ifdef CONFIG_DVFS_LIMIT
 	for(i = 0; i < DVFS_LOCK_TOKEN_NUM; i++)
@@ -798,6 +800,12 @@ static int s5pv210_cpufreq_notifier_event(struct notifier_block *this,
 	return NOTIFY_DONE;
 }
 
+/* Make sure we have the scaling_available_freqs sysfs file */
+static struct freq_attr *s5pv210_cpufreq_attr[] = {
+        &cpufreq_freq_attr_scaling_available_freqs,
+        NULL,
+};
+
 static struct cpufreq_driver s5pv210_cpufreq_driver = {
 	.flags		= CPUFREQ_STICKY,
 	.verify		= s5pv210_cpufreq_verify_speed,
@@ -805,6 +813,7 @@ static struct cpufreq_driver s5pv210_cpufreq_driver = {
 	.get		= s5pv210_cpufreq_getspeed,
 	.init		= s5pv210_cpufreq_driver_init,
 	.name		= "s5pv210",
+	.attr           = s5pv210_cpufreq_attr,
 #ifdef CONFIG_PM
 	.suspend	= s5pv210_cpufreq_suspend,
 	.resume		= s5pv210_cpufreq_resume,
