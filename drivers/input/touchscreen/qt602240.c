@@ -3380,7 +3380,7 @@ void  get_message(void)
 #if TOUCH_CPU_FREQ
 	if (touch_cpu_freq_flag == 0) {
 		touch_cpu_freq_flag = 1;
-		s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_7, L1);
+		s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_7, L2);
 	}
 #endif
 #ifdef _SUPPORT_MULTITOUCH_
